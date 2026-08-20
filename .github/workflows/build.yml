@@ -1,0 +1,29 @@
+name: Build InsertDylib
+
+# 触发条件：手动触发
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # 必须使用 macOS 运行环境，因为需要 Xcode 环境编译
+    runs-on: macos-latest
+
+    steps:
+    # 1. 拉取代码
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. 使用 xcodebuild 编译项目
+    # 设置 SYMROOT 可以让编译产出直接存放在当前目录的 build 文件夹中，避免混入系统深处的 DerivedData
+    - name: Build with xcodebuild
+      run: |
+        xcodebuild -project insert_dylib.xcodeproj -configuration Release SYMROOT="$(PWD)/build" build
+
+    # 3. 将编译好的二进制文件作为 Artifact 上传，供你在 GitHub 页面直接下载
+    - name: Upload compiled binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: insert_dylib-macOS
+        path: build/Release/insert_dylib
+        if-no-files-found: error
